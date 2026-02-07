@@ -8,6 +8,7 @@ export interface Span {
   limit: number
   datetimeField: string
   adaptiveDimension: string
+  adaptive?: boolean
 }
 
 export const SPANS: Record<number, Span> = {
@@ -48,45 +49,49 @@ export const SPANS: Record<number, Span> = {
     id: 4,
     label: 'Last 24 hours',
     ms: 24 * 60 * 60 * 1000,
-    dataset: 'httpRequests1mGroups',
-    filterType: 'ZoneHttpRequests1mGroupsFilter_InputObject',
+    dataset: 'httpRequestsAdaptiveGroups',
+    filterType: 'ZoneHttpRequestsAdaptiveGroupsFilter_InputObject',
     orderBy: 'datetimeFifteenMinutes_ASC',
     limit: 96,
     datetimeField: 'datetimeFifteenMinutes',
     adaptiveDimension: 'datetimeFifteenMinutes',
+    adaptive: true,
   },
   5: {
     id: 5,
     label: 'Last 3 days',
     ms: 3 * 24 * 60 * 60 * 1000,
-    dataset: 'httpRequests1hGroups',
-    filterType: 'ZoneHttpRequests1hGroupsFilter_InputObject',
-    orderBy: 'datetime_ASC',
+    dataset: 'httpRequestsAdaptiveGroups',
+    filterType: 'ZoneHttpRequestsAdaptiveGroupsFilter_InputObject',
+    orderBy: 'datetimeHour_ASC',
     limit: 72,
-    datetimeField: 'datetime',
+    datetimeField: 'datetimeHour',
     adaptiveDimension: 'datetimeHour',
+    adaptive: true,
   },
   6: {
     id: 6,
     label: 'Last 7 days',
     ms: 7 * 24 * 60 * 60 * 1000,
-    dataset: 'httpRequests1hGroups',
-    filterType: 'ZoneHttpRequests1hGroupsFilter_InputObject',
-    orderBy: 'datetime_ASC',
+    dataset: 'httpRequestsAdaptiveGroups',
+    filterType: 'ZoneHttpRequestsAdaptiveGroupsFilter_InputObject',
+    orderBy: 'datetimeHour_ASC',
     limit: 168,
-    datetimeField: 'datetime',
+    datetimeField: 'datetimeHour',
     adaptiveDimension: 'datetimeHour',
+    adaptive: true,
   },
   7: {
     id: 7,
     label: 'Last 30 days',
     ms: 30 * 24 * 60 * 60 * 1000,
-    dataset: 'httpRequests1dGroups',
-    filterType: 'ZoneHttpRequests1dGroupsFilter_InputObject',
+    dataset: 'httpRequestsAdaptiveGroups',
+    filterType: 'ZoneHttpRequestsAdaptiveGroupsFilter_InputObject',
     orderBy: 'date_ASC',
     limit: 30,
     datetimeField: 'date',
     adaptiveDimension: 'date',
+    adaptive: true,
   },
 }
 
