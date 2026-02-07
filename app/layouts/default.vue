@@ -28,7 +28,12 @@
     </div>
     <slot />
 
-    <p class="text-subtext text-sm mt-2 text-center flex items-center justify-center">Data provided by <a href="https://developers.cloudflare.com/analytics/graphql-api/" target="_blank" rel="noopener" class="underline inline-flex items-center"><img src="~/assets/cf.svg" alt="Cloudflare" class="inline-block w-5 h-5 mx-1.5" />Cloudflare GraphQL</a>&nbsp;with charting by <a href="https://www.tradingview.com/lightweight-charts/?utm_medium=lwc-link&utm_campaign=lwc-chart&utm_source=hackclub.com/" target="_blank" rel="noopener" class="underline inline-flex items-center"><img src="~/assets/tv.svg" alt="TradingView" class="inline-block w-5 h-5 mx-1.5" />TradingView</a></p>
+    <p class="text-subtext text-sm mt-2 text-center flex flex-wrap items-center justify-center gap-x-1">
+      <span>Data provided by</span>
+      <a href="https://developers.cloudflare.com/analytics/graphql-api/" target="_blank" rel="noopener" class="underline inline-flex items-center whitespace-nowrap"><img src="~/assets/cf.svg" alt="Cloudflare" class="inline-block w-5 h-5 mx-1.5" />Cloudflare GraphQL</a>
+      <span>with charting by</span>
+      <a href="https://www.tradingview.com/lightweight-charts/?utm_medium=lwc-link&utm_campaign=lwc-chart&utm_source=hackclub.com/" target="_blank" rel="noopener" class="underline inline-flex items-center whitespace-nowrap"><img src="~/assets/tv.svg" alt="TradingView" class="inline-block w-5 h-5 mx-1.5" />TradingView</a>
+    </p>
   </div>
 </template>
 
