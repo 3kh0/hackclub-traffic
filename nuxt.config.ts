@@ -6,6 +6,9 @@ export default defineNuxtConfig({
     cftoken: process.env.CF_TOKEN,
     cfzone: process.env.CF_ZONE,
   },
+  routeRules: {
+    '/api/**': { swr: 600 }
+  },
   css: ["@/assets/index.css"],
   vite: {
     plugins: [tailwindcss()],
