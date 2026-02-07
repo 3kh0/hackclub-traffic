@@ -24,6 +24,7 @@
 
 <script setup lang="ts">
 import { datefx } from '~/utils/format'
+useHead({ title: 'Operating Systems' })
 const metric = useMetric()
 
 const { data, error } = await useFetch('/api/os')

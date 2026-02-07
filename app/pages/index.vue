@@ -16,6 +16,7 @@
 <script setup lang="ts">
 import { datefx } from '~/utils/format'
 
+useHead({ title: 'Overview' })
 const metric = useMetric()
 
 const { data, error } = await useFetch('/api/req')
