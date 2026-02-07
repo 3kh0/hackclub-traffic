@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  /* taken from the cf dashboard */
+  --color-background: rgb(10, 10, 10);
+  --color-surface: rgb(49, 49, 49);
+  --color-main: rgb(217, 217, 217);
+  --color-subtext: rgb(153, 153, 153);
+  --color-link: rgb(8, 111, 255);
+  --color-up: rgb(34, 139, 73);
+  --color-down: rgb(232, 20, 3);
+  --color-graph: rgb(70, 147, 255);
+}
+
+body {
+  @apply bg-background text-main;
+}
