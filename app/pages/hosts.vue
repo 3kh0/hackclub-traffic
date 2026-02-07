@@ -3,11 +3,18 @@
   <div v-else class="flex flex-col gap-6">
     <div class="bg-background">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg text-main font-semibold">{{ METRICS[metric] }} by Host</h2>
-        <span class="text-subtext text-xs">Last 30 days</span>
+        <h2 class="text-lg text-main font-semibold">{{ METRICS[metric] }} over time</h2>
+        <div class="flex items-center gap-2 mb-1.5">
+          <select
+            v-model="span"
+            class="bg-transparent border border-white/10 px-2 py-1 text-xs text-subtext hover:text-main cursor-pointer focus:outline-none focus:border-white/25 appearance-none"
+          >
+            <option v-for="(label, id) in SPANS" :key="id" :value="Number(id)" class="bg-[#111]">{{ label }}</option>
+          </select>
+        </div>
       </div>
       <div class="h-80">
-        <StackedAreaChart :series="chartSeries" :pending-last="true" :metric="metric" />
+        <StackedAreaChart :series="chartSeries" :pending-last="true" :metric="metric" :span="span" />
       </div>
     </div>
 
@@ -23,11 +30,13 @@
 </template>
 
 <script setup lang="ts">
-import { datefx } from '~/utils/format'
 useHead({ title: 'Hosts' })
 const metric = useMetric()
+const span = useSpan()
 
-const { data, error } = await useFetch('/api/hosts')
+const { data, error } = await useFetch('/api/hosts', {
+  query: { span },
+})
 
 const all = computed(() =>
   ((data.value as any)?.hosts ?? []).map((h: any, i: number) => ({
@@ -66,7 +75,7 @@ const chartSeries = computed(() =>
     .map((h: any) => ({
       name: h.name as string,
       color: colorMap.value.get(h.name) ?? 'rgba(255,255,255,0.25)',
-      data: h.daily.map((d: any) => ({ time: datefx(d.date), value: d[metric.value] })),
+      data: h.daily.map((d: any) => ({ time: new Date(d.date).getTime() / 1000, value: d[metric.value] })),
     }))
 )
 </script>

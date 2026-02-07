@@ -12,11 +12,6 @@ export function fmtNum(n: number) {
   return n.toLocaleString()
 }
 
-export function datefx(date: string) {
-  const parts = date.split('-').map(Number)
-  return (Date.UTC(parts[0]!, parts[1]! - 1, parts[2]! + 1, 0, 0, 0) / 1000) - new Date().getTimezoneOffset() * 60
-}
-
 export const COLORS = [
   "rgba(255, 90, 100, 0.8)",
   "rgba(100, 235, 80, 0.8)",

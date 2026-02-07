@@ -25,6 +25,7 @@ import { fmt, COLORS } from '~/utils/format'
 const props = defineProps<{
   series: { name: string; data: { time: string | number; value: number }[]; color: string }[]
   metric?: Metric
+  span?: number
 }>()
 
 const wrapper = ref<HTMLElement>()
@@ -50,10 +51,12 @@ function fmtVal(v: number) {
 
 function fmtTime(t: number | string) {
   const d = typeof t === 'number' ? new Date(t * 1000) : new Date(t)
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+  if (!props.span || props.span >= 7)
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+  return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })
 }
 
-function resetSeries() {
+function reset() {
   instances = []
   pending = []
 }
@@ -91,6 +94,14 @@ function createChartInstance() {
       borderColor: 'rgba(255,255,255,0.1)',
       timeVisible: true,
       secondsVisible: false,
+      tickMarkFormatter: (time: number, tickMarkType: number) => {
+        const d = new Date(time * 1000)
+        if (tickMarkType <= 0) return d.toLocaleDateString(undefined, { year: 'numeric' })
+        if (tickMarkType === 1) return d.toLocaleDateString(undefined, { month: 'short' })
+        if (tickMarkType === 2) return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+        if (d.getMinutes() % 5 !== 0) return ''
+        return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })
+      },
     },
     crosshair: {
       mode: CrosshairMode.Normal,
@@ -150,7 +161,7 @@ function updateSeries() {
 
   for (const s of instances) chart.removeSeries(s)
   for (const s of pending) if (s) chart.removeSeries(s)
-  resetSeries()
+  reset()
 
   const isBytes = props.metric === 'bytes'
   if (isBytes) {
@@ -226,13 +237,13 @@ watch(() => props.series, () => {
 watch(() => props.metric, () => {
   chart?.remove()
   chart = null
-  resetSeries()
+  reset()
   createChartInstance()
 })
 
 onBeforeUnmount(() => {
   chart?.remove()
   chart = null
-  resetSeries()
+  reset()
 })
 </script>

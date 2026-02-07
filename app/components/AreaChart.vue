@@ -28,6 +28,7 @@ const props = defineProps<{
   height?: number
   minimal?: boolean
   metric?: Metric
+  span?: number
 }>()
 
 const wrapper = ref<HTMLElement>()
@@ -52,8 +53,10 @@ function formatValue(price: number) {
 }
 
 function formatTime(t: number | string) {
-  const date = typeof t === 'number' ? new Date(t * 1000) : new Date(t)
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+  const d = typeof t === 'number' ? new Date(t * 1000) : new Date(t)
+  if (!props.span || props.span >= 7)
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+  return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })
 }
 
 function fmtPrice(price: number) {
@@ -89,6 +92,14 @@ function createChartInstance() {
       borderColor: 'rgba(255,255,255,0.1)',
       timeVisible: true,
       secondsVisible: false,
+      tickMarkFormatter: (time: number, tickMarkType: number) => {
+        const d = new Date(time * 1000)
+        if (tickMarkType <= 0) return d.toLocaleDateString(undefined, { year: 'numeric' })
+        if (tickMarkType === 1) return d.toLocaleDateString(undefined, { month: 'short' })
+        if (tickMarkType === 2) return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+        if (d.getMinutes() % 5 !== 0) return ''
+        return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })
+      },
     },
     crosshair: {
       mode: CrosshairMode.Normal,

@@ -4,26 +4,34 @@
     <div class="bg-background">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg text-main font-semibold">{{ METRICS[metric] }} over time</h2>
-        <span class="text-subtext text-xs">Last 30 days</span>
+        <div class="flex items-center gap-2 mb-1.5">
+          <select
+            v-model="span"
+            class="bg-transparent border border-white/10 px-2 py-1 text-xs text-subtext hover:text-main cursor-pointer focus:outline-none focus:border-white/25 appearance-none"
+          >
+            <option v-for="(label, id) in SPANS" :key="id" :value="Number(id)" class="bg-[#111]">{{ label }}</option>
+          </select>
+        </div>
       </div>
       <div class="h-80">
-        <AreaChart :data="d" :metric="metric" />
+        <AreaChart :data="d" :metric="metric" :span="span" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { datefx } from '~/utils/format'
-
 useHead({ title: 'Overview' })
 const metric = useMetric()
+const span = useSpan()
 
-const { data, error } = await useFetch('/api/req')
+const { data, error } = await useFetch('/api/req', {
+  query: { span },
+})
 
 const d = computed(() =>
-  [...((data.value as any)?.daily ?? [])]
-    .sort((a: any, b: any) => a.dimensions.date.localeCompare(b.dimensions.date))
-    .map((d: any) => ({ time: datefx(d.dimensions.date), value: d.sum[metric.value] }))
+  [...((data.value as any)?.data ?? [])]
+    .sort((a: any, b: any) => a.dimensions.ts.localeCompare(b.dimensions.ts))
+    .map((d: any) => ({ time: new Date(d.dimensions.ts).getTime() / 1000, value: d.sum[metric.value] }))
 )
 </script>

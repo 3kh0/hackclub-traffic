@@ -1,10 +1,9 @@
-export function last30Days() {
-  const now = new Date()
-  const since = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-  return { now, since }
+export function baseFilter(since: Date, now: Date, dateOnly = false) {
+  if (dateOnly) return { AND: [{ date_geq: since.toISOString().slice(0, 10), date_leq: now.toISOString().slice(0, 10) }] }
+  return { AND: [{ datetime_geq: since.toISOString(), datetime_leq: now.toISOString() }] }
 }
 
-export function baseFilter(since: Date, now: Date) {
+export function adaptiveFilter(since: Date, now: Date) {
   return { AND: [{ datetime_geq: since.toISOString(), datetime_leq: now.toISOString() }, { requestSource: 'eyeball' }] }
 }
 
@@ -55,18 +54,23 @@ export function attachDaily<T extends Record<string, any>>(items: T[], key: stri
   }))
 }
 
+export function spanParam(event: any) {
+  return Number(getQuery(event).span ?? '7')
+}
+
 type BreakdownConfig = {
   dimension: string
   topAlias: string
   topLimit?: number
-  dailyAlias?: string
   key: string
   returnKey: string
+  spanId?: number
 }
 
 export async function fetchBreakdown(cfg: BreakdownConfig) {
-  const { now, since } = last30Days()
-  const filter = baseFilter(since, now)
+  const span = getSpan(cfg.spanId ?? 7)
+  const { now, since } = useSpan(span)
+  const filter = adaptiveFilter(since, now)
   const zoneTag = useRuntimeConfig().cfzone
 
   const tq = `
@@ -85,14 +89,15 @@ export async function fetchBreakdown(cfg: BreakdownConfig) {
   if (!top.length) return { [cfg.returnKey]: [] }
 
   const names = top.map((i: any) => i[cfg.key])
+  const tsDim = span.adaptiveDimension
 
   const dq = `
     query Daily($zoneTag: string, $filter: ZoneHttpRequestsAdaptiveGroupsFilter_InputObject) {
       viewer { scope: zones(filter: {zoneTag: $zoneTag}) {
-        series: httpRequestsAdaptiveGroups(limit: 5000, filter: $filter) {
+        series: httpRequestsAdaptiveGroups(limit: 10000, filter: $filter, orderBy: [${tsDim}_ASC]) {
           count
           sum { edgeResponseBytes visits }
-          dimensions { metric: ${cfg.dimension} ts: date }
+          dimensions { metric: ${cfg.dimension} ts: ${tsDim} }
         }
       }}
     }`
