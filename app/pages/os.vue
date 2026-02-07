@@ -34,9 +34,10 @@ useHead({ title: 'Operating Systems' })
 const metric = useMetric()
 const span = useSpan()
 
-const { data, error } = await useFetch('/api/os', {
+const { data, error, pending } = await useFetch('/api/os', {
   query: { span },
 })
+useLoading(pending)
 
 const all = computed(() =>
   ((data.value as any)?.oss ?? []).map((c: any, i: number) => ({

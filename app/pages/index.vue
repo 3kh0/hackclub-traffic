@@ -25,9 +25,10 @@ useHead({ title: 'Overview' })
 const metric = useMetric()
 const span = useSpan()
 
-const { data, error } = await useFetch('/api/req', {
+const { data, error, pending } = await useFetch('/api/req', {
   query: { span },
 })
+useLoading(pending)
 
 const d = computed(() =>
   [...((data.value as any)?.data ?? [])]

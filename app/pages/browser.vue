@@ -34,9 +34,10 @@ useHead({ title: 'Browsers' })
 const metric = useMetric()
 const span = useSpan()
 
-const { data, error } = await useFetch('/api/browsers', {
+const { data, error, pending } = await useFetch('/api/browsers', {
   query: { span },
 })
+useLoading(pending)
 
 const all = computed(() =>
   ((data.value as any)?.browsers ?? []).map((c: any, i: number) => ({

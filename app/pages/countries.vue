@@ -34,9 +34,10 @@ useHead({ title: 'Countries' })
 const metric = useMetric()
 const span = useSpan()
 
-const { data, error } = await useFetch('/api/countries', {
+const { data, error, pending } = await useFetch('/api/countries', {
   query: { span },
 })
+useLoading(pending)
 
 const all = computed(() =>
   ((data.value as any)?.countries ?? []).map((c: any, i: number) => ({

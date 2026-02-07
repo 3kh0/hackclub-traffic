@@ -34,9 +34,10 @@ useHead({ title: 'Hosts' })
 const metric = useMetric()
 const span = useSpan()
 
-const { data, error } = await useFetch('/api/hosts', {
+const { data, error, pending } = await useFetch('/api/hosts', {
   query: { span },
 })
+useLoading(pending)
 
 const all = computed(() =>
   ((data.value as any)?.hosts ?? []).map((h: any, i: number) => ({

@@ -27,7 +27,6 @@
       </div>
     </div>
     <slot />
-
     <p class="text-subtext text-sm mt-2 text-center flex flex-wrap items-center justify-center gap-x-1">
       <span>Data provided by</span>
       <a href="https://developers.cloudflare.com/analytics/graphql-api/" target="_blank" rel="noopener" class="underline inline-flex items-center whitespace-nowrap"><img src="~/assets/cf.svg" alt="Cloudflare" class="inline-block w-5 h-5 mx-1.5" />Cloudflare GraphQL</a>
