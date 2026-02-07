@@ -135,9 +135,8 @@ function createChartInstance() {
       const tw = 260, th = 40 + items.length * 22
       let x = param.point.x + 56
       let y = param.point.y - th / 2
-      if (x + tw > rect.width) x = param.point.x - tw - 16
-      if (y < 0) y = 0
-      if (y + th > rect.height) y = rect.height - th
+      if (x + tw > rect.width) x = rect.width - tw - 10
+      if (y < 0) y = 10
       tip.x = x
       tip.y = y
     }

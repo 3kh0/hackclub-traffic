@@ -141,19 +141,15 @@ function createChartInstance() {
       return
     }
 
-    const containerRect = wrapper.value?.getBoundingClientRect()
-    if (param.point && containerRect) {
-      const tooltipWidth = 180
-      const tooltipHeight = 32
-      let x = param.point.x + 56
-      let y = param.point.y - tooltipHeight / 2
-
-      if (x + tooltipWidth > containerRect.width) {
-        x = param.point.x - tooltipWidth - 16
-      }
+    const rect = wrapper.value?.getBoundingClientRect()
+    if (param.point && rect) {
+      const tw = 180, th = 32, gap = 12
+      const ps = chart!.priceScale('left').width()
+      const cx = param.point.x + ps
+      let x = cx + gap
+      let y = param.point.y - th / 2
+      if (x + tw > rect.width) x = rect.width - tw - 10
       if (y < 0) y = 0
-      if (y + tooltipHeight > containerRect.height) y = containerRect.height - tooltipHeight
-
       tooltip.x = x
       tooltip.y = y
     }
