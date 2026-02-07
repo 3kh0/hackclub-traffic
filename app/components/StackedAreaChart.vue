@@ -78,6 +78,10 @@ function createChartInstance() {
       visible: true,
       borderColor: 'rgba(255,255,255,0.1)',
       minimumWidth: 50,
+      scaleMargins: {
+        top: 0.15,
+        bottom: 0.1,
+      },
     },
     rightPriceScale: {
       visible: false,
@@ -184,6 +188,13 @@ function updateSeries() {
       },
       lastValueVisible: false,
       priceLineVisible: false,
+      autoscaleInfoProvider: (original: () => any) => {
+        const res = original()
+        if (res !== null && res.priceRange.minValue < 0) {
+          res.priceRange.minValue = 0
+        }
+        return res
+      },
     }
 
     const data = isBytes
