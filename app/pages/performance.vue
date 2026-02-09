@@ -10,12 +10,15 @@
 
     <h2 class="text-lg text-main font-semibold mb-4">Time to First Byte (ms)</h2>
     <div class="h-80">
-      <AreaChart :data="ttfbData" :span="span" />
+      <LoadingChart v-if="pending" />
+      <AreaChart v-else :data="ttfbData" :span="span" />
     </div>
 
     <h2 class="text-lg text-main font-semibold mb-4">Origin Response Time (ms)</h2>
     <div class="h-80">
+      <LoadingChart v-if="pending" />
       <AreaChart
+        v-else
         :data="originData"
         :span="span"
         lineColor="rgba(255, 180, 60, 1)"

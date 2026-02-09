@@ -4,7 +4,8 @@
     <div class="bg-background">
       <h2 class="text-lg text-main font-semibold mb-4">{{ METRICS[metric] }} over time</h2>
       <div class="h-80">
-        <AreaChart :data="d" :metric="metric" :span="span" />
+        <LoadingChart v-if="pending" />
+        <AreaChart v-else :data="d" :metric="metric" :span="span" />
       </div>
     </div>
   </div>
@@ -17,7 +18,7 @@ useHead({ title: 'Overview' })
 const metric = useMetric()
 const span = useSpan()
 
-const { data, error, pending } = await useFetch('/api/req', {
+const { data, error, pending } = useLazyFetch('/api/req', {
   query: { span },
 })
 useLoading(pending)
