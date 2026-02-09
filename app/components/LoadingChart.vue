@@ -126,9 +126,14 @@ function createChartInstance() {
   }, 120)
 }
 
-onMounted(() => createChartInstance())
+let unmounted = false
+
+onMounted(() => {
+  if (!unmounted) createChartInstance()
+})
 
 onBeforeUnmount(() => {
+  unmounted = true
   if (interval) clearInterval(interval)
   chart?.remove()
   chart = null
