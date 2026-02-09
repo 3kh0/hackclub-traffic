@@ -2,17 +2,7 @@
   <div v-if="error" class="text-down">Error: {{ error.message }}</div>
   <div v-else class="flex flex-col gap-6">
     <div class="bg-background">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg text-main font-semibold">{{ METRICS[metric] }} over time</h2>
-        <div class="flex items-center gap-2 mb-1.5">
-          <select
-            v-model="span"
-            class="bg-transparent border border-white/10 px-2 py-1 text-xs text-subtext hover:text-main cursor-pointer focus:outline-none focus:border-white/25 appearance-none"
-          >
-            <option v-for="(label, id) in SPANS" :key="id" :value="Number(id)" class="bg-[#111]">{{ label }}</option>
-          </select>
-        </div>
-      </div>
+      <h2 class="text-lg text-main font-semibold mb-4">{{ METRICS[metric] }} over time</h2>
       <div class="h-80">
         <AreaChart :data="d" :metric="metric" :span="span" />
       </div>
@@ -21,6 +11,8 @@
 </template>
 
 <script setup lang="ts">
+import { METRICS } from '~/composables/useMetric'
+
 useHead({ title: 'Overview' })
 const metric = useMetric()
 const span = useSpan()

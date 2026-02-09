@@ -2,78 +2,30 @@
   <div v-if="error" class="text-down">Error: {{ error.message }}</div>
   <div v-else class="flex flex-col gap-6">
     <div class="bg-background">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg text-main font-semibold">{{ METRICS[metric] }} over time</h2>
-        <div class="flex items-center gap-2 mb-1.5">
-          <select
-            v-model="span"
-            class="bg-transparent border border-white/10 px-2 py-1 text-xs text-subtext hover:text-main cursor-pointer focus:outline-none focus:border-white/25 appearance-none"
-          >
-            <option v-for="(label, id) in SPANS" :key="id" :value="Number(id)" class="bg-[#111]">{{ label }}</option>
-          </select>
-        </div>
-      </div>
+      <h2 class="text-lg text-main font-semibold mb-4">{{ METRICS[metric] }} over time</h2>
       <div class="h-80">
         <StackedAreaChart :series="chartSeries" :metric="metric" :span="span" />
       </div>
     </div>
 
     <BreakdownTable
-      label="Browser" 
-      :items="items"
+      label="Browser"
+      :items="all"
       :selected="selected"
       :color-map="colorMap"
       :default-sort="metric"
-      @t="ti"
+      @t="toggle"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import { METRICS } from '~/composables/useMetric'
+
 useHead({ title: 'Browsers' })
-const metric = useMetric()
-const span = useSpan()
-
-const { data, error, pending } = await useFetch('/api/browsers', {
-  query: { span },
+const { metric, span, error, all, selected, colorMap, toggle, chartSeries } = useBreakdown({
+  endpoint: '/api/browsers',
+  dataKey: 'browsers',
+  nameKey: 'browser',
 })
-useLoading(pending)
-
-const all = computed(() =>
-  ((data.value as any)?.browsers ?? []).map((c: any, i: number) => ({
-    ...c, _index: i, name: c.browser,
-  }))
-)
-
-const selected = ref(new Set<string>())
-const colorMap = useColorMap(selected)
-
-const sortKey = computed<'totalRequests' | 'totalBytes' | 'totalVisits'>(() =>
-  metric.value === 'bytes' ? 'totalBytes' : metric.value === 'visits' ? 'totalVisits' : 'totalRequests'
-)
-
-watch([all, metric], ([v]) => {
-  if (v.length) {
-    const sorted = [...v].sort((a: any, b: any) => b[sortKey.value] - a[sortKey.value])
-    selected.value = new Set(sorted.slice(0, 5).map((c: any) => c.name))
-  }
-}, { immediate: true, flush: 'sync' })
-
-function ti(name: string) {
-  const s = new Set(selected.value)
-  s.has(name) ? s.delete(name) : s.size < 15 && s.add(name)
-  selected.value = s
-}
-
-const items = computed(() => all.value)
-
-const chartSeries = computed(() =>
-  all.value
-    .filter((c: any) => selected.value.has(c.name))
-    .map((c: any) => ({
-      name: c.name as string,
-      color: colorMap.value.get(c.name) ?? 'rgba(255,255,255,0.25)',
-      data: c.daily.map((d: any) => ({ time: new Date(d.date).getTime() / 1000, value: d[metric.value] })),
-    }))
-)
 </script>
