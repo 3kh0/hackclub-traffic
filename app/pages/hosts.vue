@@ -47,7 +47,6 @@ const all = computed(() =>
 
 const selected = ref(new Set<string>())
 const colorMap = useColorMap(selected)
-const init = ref(false)
 
 const sortKey = computed<'totalRequests' | 'totalBytes' | 'totalVisits'>(() =>
   metric.value === 'bytes' ? 'totalBytes' : metric.value === 'visits' ? 'totalVisits' : 'totalRequests'
@@ -57,7 +56,6 @@ watch([all, metric], ([v]) => {
   if (v.length) {
     const sorted = [...v].sort((a: any, b: any) => b[sortKey.value] - a[sortKey.value])
     selected.value = new Set(sorted.slice(0, 5).map((h: any) => h.name))
-    init.value = true
   }
 }, { immediate: true, flush: 'sync' })
 
