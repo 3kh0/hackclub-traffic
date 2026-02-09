@@ -67,5 +67,8 @@ const tabs = [
   { to: '/countries', label: 'Countries' },
   { to: '/browser', label: 'Browsers' },
   { to: '/os', label: 'Operating Systems' },
+  { to: '/performance', label: 'Performance' },
+  { to: '/security', label: 'Security' },
+  { to: '/cache', label: 'Cache' },
 ]
 </script>
