@@ -9,11 +9,14 @@ export function adaptiveFilter(since: Date, now: Date) {
 
 export async function cfQuery(query: string, variables: Record<string, any>) {
   const c = useRuntimeConfig()
+  const ac = new AbortController()
+  const t = setTimeout(() => ac.abort(), 10_000)
   const res = await fetch('https://api.cloudflare.com/client/v4/graphql', {
     method: 'POST',
     headers:{ 'Authorization': `Bearer ${c.cftoken}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ query, variables }),
-  })
+    signal: ac.signal,
+  }).finally(() => clearTimeout(t))
   const data = await res.json()
   if (data.errors) throw createError({ statusCode: 500, message: data.errors[0].message })
   if (!res.ok) throw createError({ statusCode: res.status, message: 'Cloudflare API error' })
