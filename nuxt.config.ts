@@ -7,7 +7,7 @@ export default defineNuxtConfig({
     cfzone: process.env.CF_ZONE,
   },
   routeRules: {
-    '/api/**': { swr: 600 }
+    //'/api/**': { swr: 600 }
   },
   css: ["@/assets/index.css"],
   vite: {

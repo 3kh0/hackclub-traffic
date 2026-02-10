@@ -4,7 +4,8 @@
     <div class="bg-background">
       <h2 class="text-lg text-main font-semibold mb-4">{{ METRICS[metric] }} over time</h2>
       <div class="h-80">
-        <StackedAreaChart :series="chartSeries" :metric="metric" :span="span" />
+        <StackedLoadingChart v-if="pending" />
+         <StackedAreaChart v-else :series="chartSeries" :metric="metric" :span="span" />
       </div>
     </div>
 
@@ -23,7 +24,7 @@
 import { METRICS } from '~/composables/useMetric'
 
 useHead({ title: 'Countries' })
-const { metric, span, error, all, selected, colorMap, toggle, chartSeries } = useBreakdown({
+const { metric, span, pending, error, all, selected, colorMap, toggle, chartSeries } = useBreakdown({
   endpoint: '/api/countries',
   dataKey: 'countries',
   nameKey: 'country',
