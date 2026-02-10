@@ -1,3 +1,4 @@
+import { ref, watch, type Ref } from '#imports'
 import { COLORS } from '~/utils/format'
 
 export function useColorMap(selected: Ref<Set<string>>) {

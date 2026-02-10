@@ -1,4 +1,9 @@
+import { computed, ref, watch, useFetch } from '#imports'
 import type { Metric } from './useMetric'
+import { useMetric } from './useMetric'
+import { useSpan } from './useSpan'
+import { useLoading } from './useLoading'
+import { useColorMap } from './useColorMap'
 
 interface BreakdownConfig {
   endpoint: string
@@ -31,7 +36,7 @@ export function useBreakdown(cfg: BreakdownConfig) {
     metric.value === 'bytes' ? 'totalBytes' : metric.value === 'visits' ? 'totalVisits' : 'totalRequests'
   )
 
-  watch([all, metric], ([v]) => {
+  watch([all, metric], ([v]: [any, any]) => {
     if (v.length) {
       const sorted = [...v].sort((a: any, b: any) => b[sortKey.value] - a[sortKey.value])
       selected.value = new Set(sorted.slice(0, cfg.topN ?? 5).map((item: any) => item.name))

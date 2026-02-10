@@ -1,3 +1,4 @@
+import { computed, useRoute, useRouter } from '#imports'
 export const SPANS: Record<number, string> = {
   1: 'Last 30 minutes',
   2: 'Last 6 hours',
@@ -12,6 +13,6 @@ export function useSpan() {
   const r = useRoute()
   return computed<number>({
     get: () => { const v = Number(r.query.span); return v >= 1 && v <= 7 ? v : 7 },
-    set: (v) => useRouter().replace({ query: { ...r.query, span: v } }),
+    set: (v: number) => useRouter().replace({ query: { ...r.query, span: v } }),
   })
 }

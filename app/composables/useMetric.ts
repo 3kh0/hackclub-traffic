@@ -1,3 +1,4 @@
+import { computed, useRoute, useRouter } from '#imports'
 export type Metric = 'requests' | 'bytes' | 'visits'
 
 const VALID_METRICS: Metric[] = ['requests', 'bytes', 'visits']

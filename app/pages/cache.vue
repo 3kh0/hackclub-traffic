@@ -3,7 +3,7 @@
   <div v-else class="flex flex-col gap-6">
     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
       <StatCard label="Cache Hit Ratio" :value="((data?.hitRatio ?? 0) * 100).toFixed(1) + '%'" />
-      <StatCard label="Bandwidth Saved" :value="fmt(data?.savedBytes ?? 0)" />
+      <StatCard label="Bandwidth Saved" :value="fmt((data as any)?.savedBytes ?? 0)" />
       <StatCard label="Total Cached" :value="fmtNum(hitCount)" />
     </div>
 
@@ -52,7 +52,7 @@ const hitCount = computed(() =>
 )
 
 const all = computed(() => {
-  const statuses = [...new Set(((data.value as any)?.timeline ?? []).map((e: any) => e.status))]
+  const statuses = [...new Set(((data.value as any)?.timeline ?? []).map((e: any) => e.status))] as string[]
   return statuses.map(status => ({
     name: status,
     color: STATUS_COLORS[status] ?? 'rgba(153, 153, 153, 0.6)',

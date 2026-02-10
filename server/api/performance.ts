@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const statusCodes = Object.entries(buckets).map(([status, count]) => ({ status, count }))
-  const errors = buckets['4xx'] + buckets['5xx']
+  const errors = (buckets['4xx'] ?? 0) + (buckets['5xx'] ?? 0)
   const errorRate = total > 0 ? errors / total : 0
 
   const ttfb = (d?.timeSeries ?? []).map((e: any) => ({

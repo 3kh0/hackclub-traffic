@@ -1,3 +1,4 @@
+import { watch, useNuxtApp, type Ref } from '#imports'
 import NProgress from 'nprogress'
 
 export function useLoading(pending: Ref<boolean>) {

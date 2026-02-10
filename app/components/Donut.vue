@@ -33,7 +33,7 @@ const tp = computed(() => {
 })
 
 const tl = computed(() => {
-  return ps.value.reduce((a, b) => a.pct > b.pct ? a : b, { pct: 0 } as { pct: number }).label
+  return ps.value.reduce((a, b) => a.pct > b.pct ? a : b, { pct: 0, label: '' } as { pct: number; label: string }).label
 })
 </script>
 

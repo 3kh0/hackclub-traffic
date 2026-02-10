@@ -2,9 +2,9 @@
   <div v-if="error" class="text-down">Error: {{ error.message }}</div>
   <div v-else class="flex flex-col gap-6">
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard label="2xx Responses" :value="fmtNum(statusMap['2xx'])" />
-      <StatCard label="4xx Responses" :value="fmtNum(statusMap['4xx'])" />
-      <StatCard label="5xx Responses" :value="fmtNum(statusMap['5xx'])" />
+      <StatCard label="2xx Responses" :value="fmtNum(statusMap['2xx'] ?? 0)" />
+      <StatCard label="4xx Responses" :value="fmtNum(statusMap['4xx'] ?? 0)" />
+      <StatCard label="5xx Responses" :value="fmtNum(statusMap['5xx'] ?? 0)" />
       <StatCard label="Error Rate" :value="errorPct" />
     </div>
 

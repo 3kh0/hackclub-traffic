@@ -41,10 +41,10 @@ function catmullRom(p0: number, p1: number, p2: number, p3: number, t: number) {
 function inter(controls: number[], baseTime: number) {
   const points: { time: any; value: number }[] = []
   for (let i = 0; i < controls.length - 1; i++) {
-    const p0 = controls[Math.max(i - 1, 0)]
-    const p1 = controls[i]
-    const p2 = controls[i + 1]
-    const p3 = controls[Math.min(i + 2, controls.length - 1)]
+    const p0 = controls[Math.max(i - 1, 0)]!
+    const p1 = controls[i]!
+    const p2 = controls[i + 1]!
+    const p3 = controls[Math.min(i + 2, controls.length - 1)]!
     for (let s = 0; s < 8; s++) {
       const t = s / 8
       const val = catmullRom(p0, p1, p2, p3, t)
@@ -52,7 +52,7 @@ function inter(controls: number[], baseTime: number) {
       points.push({ time: time as any, value: Math.max(2, val) })
     }
   }
-  const last = controls[controls.length - 1]
+  const last = controls[controls.length - 1]!
   points.push({ time: (baseTime + (controls.length - 1) * 8 * 60) as any, value: Math.max(2, last) })
   return points
 }
@@ -90,7 +90,7 @@ function createChartInstance() {
     autoSize: true,
   })
 
-  createTextWatermark(chart.panes()[0], {
+  createTextWatermark(chart.panes()[0]!, {
     horzAlign: 'center',
     vertAlign: 'center',
     lines: [

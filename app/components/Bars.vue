@@ -2,7 +2,7 @@
 import { fmtNum } from '~/utils/format'
 
 const props = withDefaults(defineProps<{
-  items: { label: string; value: number; formatted?: string }[]
+  items: { label: string; value: number; formatted?: string; color?: string }[]
   color?: string
   max?: number
 }>(), {
