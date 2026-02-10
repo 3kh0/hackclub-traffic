@@ -20,6 +20,7 @@ const span = useSpan()
 
 const { data, error, pending } = useLazyFetch('/api/req', {
   query: { span },
+  server: false,
 })
 useLoading(pending)
 
