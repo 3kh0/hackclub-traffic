@@ -71,15 +71,16 @@ type BreakdownConfig = {
 }
 
 export async function fetchBreakdown(cfg: BreakdownConfig) {
-  const span = getSpan(cfg.spanId ?? 7)
-  const { now, since } = useSpan(span)
-  const filter = adaptiveFilter(since, now)
+  const s = getSpan(cfg.spanId ?? 7)
+  const { now, since } = spanRange(s)
+  const filter = s.adaptive ? adaptiveFilter(since, now) : baseFilter(since, now)
   const zoneTag = useRuntimeConfig().cfzone
+  const { dataset: ds, filterType: ft, adaptiveDimension: tsDim } = s
 
   const tq = `
-    query Top($zoneTag: string, $filter: ZoneHttpRequestsAdaptiveGroupsFilter_InputObject) {
+    query Top($zoneTag: string, $filter: ${ft}) {
       viewer { scope: zones(filter: {zoneTag: $zoneTag}) {
-        ${cfg.topAlias}: httpRequestsAdaptiveGroups(limit: ${cfg.topLimit ?? 25}, filter: $filter, orderBy: [count_DESC]) {
+        ${cfg.topAlias}: ${ds}(limit: ${cfg.topLimit ?? 25}, filter: $filter, orderBy: [count_DESC]) {
           count
           sum { edgeResponseBytes visits }
           dimensions { metric: ${cfg.dimension} }
@@ -92,12 +93,11 @@ export async function fetchBreakdown(cfg: BreakdownConfig) {
   if (!top.length) return { [cfg.returnKey]: [] }
 
   const names = top.map((i: any) => i[cfg.key])
-  const tsDim = span.adaptiveDimension
 
   const dq = `
-    query Daily($zoneTag: string, $filter: ZoneHttpRequestsAdaptiveGroupsFilter_InputObject) {
+    query Daily($zoneTag: string, $filter: ${ft}) {
       viewer { scope: zones(filter: {zoneTag: $zoneTag}) {
-        series: httpRequestsAdaptiveGroups(limit: 10000, filter: $filter, orderBy: [${tsDim}_ASC]) {
+        series: ${ds}(limit: 10000, filter: $filter, orderBy: [${tsDim}_ASC]) {
           count
           sum { edgeResponseBytes visits }
           dimensions { metric: ${cfg.dimension} ts: ${tsDim} }

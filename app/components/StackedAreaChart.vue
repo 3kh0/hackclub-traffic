@@ -234,7 +234,7 @@ watch(() => props.series, () => {
   chart?.timeScale().fitContent()
 }, { deep: true })
 
-watch(() => props.metric, () => {
+watch([() => props.metric, () => props.span], () => {
   chart?.remove()
   chart = null
   reset()

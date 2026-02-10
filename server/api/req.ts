@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   const s = getSpan(spanParam(event))
-  const { now, since } = useSpan(s)
+  const { now, since } = spanRange(s)
 
   const sumFields = s.adaptive ? 'edgeResponseBytes visits' : 'requests bytes pageViews'
   const countField = s.adaptive ? 'count' : ''

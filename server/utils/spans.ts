@@ -101,8 +101,7 @@ export function getSpan(id: number): Span {
   return span
 }
 
-export function useSpan(span: Span) {
+export function spanRange(s: Span) {
   const now = new Date()
-  const since = new Date(now.getTime() - span.ms)
-  return { now, since }
+  return { now, since: new Date(now.getTime() - s.ms) }
 }

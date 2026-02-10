@@ -9,18 +9,9 @@ export const SPANS: Record<number, string> = {
 }
 
 export function useSpan() {
-  const route = useRoute()
-  const router = useRouter()
-
-  const span = computed<number>({
-    get: () => {
-      const s = Number(route.query.s)
-      return s >= 1 && s <= 7 ? s : 7
-    },
-    set: (val: number) => {
-      router.replace({ query: { ...route.query, s: val } })
-    },
+  const r = useRoute()
+  return computed<number>({
+    get: () => { const v = Number(r.query.span); return v >= 1 && v <= 7 ? v : 7 },
+    set: (v) => useRouter().replace({ query: { ...r.query, span: v } }),
   })
-
-  return span
 }

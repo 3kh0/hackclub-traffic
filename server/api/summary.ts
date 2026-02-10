@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   const s = getSpan(spanParam(event))
-  const { now, since } = useSpan(s)
+  const { now, since } = spanRange(s)
   const filter = adaptiveFilter(since, now)
   const zoneTag = useRuntimeConfig().cfzone
 
