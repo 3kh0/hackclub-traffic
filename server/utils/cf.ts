@@ -73,9 +73,11 @@ type BreakdownConfig = {
 export async function fetchBreakdown(cfg: BreakdownConfig) {
   const s = getSpan(cfg.spanId ?? 7)
   const { now, since } = spanRange(s)
-  const filter = s.adaptive ? adaptiveFilter(since, now) : baseFilter(since, now)
+  const filter = adaptiveFilter(since, now)
   const zoneTag = useRuntimeConfig().cfzone
-  const { dataset: ds, filterType: ft, adaptiveDimension: tsDim } = s
+  const ds = 'httpRequestsAdaptiveGroups'
+  const ft = 'ZoneHttpRequestsAdaptiveGroupsFilter_InputObject'
+  const { adaptiveDimension: tsDim } = s
 
   const tq = `
     query Top($zoneTag: string, $filter: ${ft}) {
