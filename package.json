@@ -10,13 +10,13 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.1.18",
-    "lightweight-charts": "^5.1.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "lightweight-charts": "^5.2.1",
     "nprogress": "^0.2.0",
-    "nuxt": "^4.3.1",
-    "tailwindcss": "^4.1.18",
-    "vue": "^3.5.28",
-    "vue-router": "^4.6.4"
+    "nuxt": "^4.5.2",
+    "tailwindcss": "^4.3.3",
+    "vue": "^3.5.43",
+    "vue-router": "^5.3.1"
   },
   "devDependencies": {
     "@types/nprogress": "^0.2.3"
