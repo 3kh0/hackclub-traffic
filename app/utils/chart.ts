@@ -1,4 +1,8 @@
-import { CrosshairMode, LineStyle, type DeepPartial, type ChartOptions } from 'lightweight-charts'
+import type { ChartOptions, CrosshairMode, DeepPartial, LineStyle } from 'lightweight-charts'
+
+// enum values inlined so this file never pulls lightweight-charts into the main bundle
+export const DASHED = 2 as LineStyle
+const NORMAL = 0 as CrosshairMode
 
 export interface ChartTheme {
   text: string
@@ -13,7 +17,7 @@ export function themeOptions(t: ChartTheme): DeepPartial<ChartOptions> {
     layout: { textColor: t.text },
     grid: {
       vertLines: { visible: false },
-      horzLines: { color: t.grid, style: LineStyle.Dashed },
+      horzLines: { color: t.grid, style: DASHED },
     },
     leftPriceScale: { borderColor: t.border },
     timeScale: { borderColor: t.border },
@@ -28,7 +32,7 @@ export function baseOptions(t: ChartTheme): DeepPartial<ChartOptions> {
     layout: {
       ...theme.layout,
       background: { color: 'transparent' },
-      fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
+      fontFamily: "'Inter Variable', ui-sans-serif, system-ui, sans-serif",
       fontSize: 12,
       attributionLogo: false,
     },
@@ -54,8 +58,8 @@ export function baseOptions(t: ChartTheme): DeepPartial<ChartOptions> {
       },
     },
     crosshair: {
-      mode: CrosshairMode.Normal,
-      vertLine: { ...theme.crosshair!.vertLine, width: 1, style: LineStyle.Dashed, labelVisible: false },
+      mode: NORMAL,
+      vertLine: { ...theme.crosshair!.vertLine, width: 1, style: DASHED, labelVisible: false },
       horzLine: { visible: false, labelVisible: false },
     },
     handleScale: false,

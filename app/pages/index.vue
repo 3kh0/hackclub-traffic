@@ -3,12 +3,8 @@
   <div v-else class="flex flex-col gap-6">
     <LayerCard :title="`${METRICS[metric]} over time`">
       <div class="h-80">
-        <!-- data is fetched client-side only, so render the skeleton on the server -->
-        <ClientOnly>
-          <ChartSkeleton v-if="pending" />
-          <AreaChart v-else :data="points" :metric="metric" :span="span" :name="METRICS[metric]" />
-          <template #fallback><ChartSkeleton /></template>
-        </ClientOnly>
+        <ChartSkeleton v-if="pending" />
+        <AreaChart v-else :data="points" :metric="metric" :span="span" :name="METRICS[metric]" />
       </div>
     </LayerCard>
   </div>
@@ -21,7 +17,7 @@ useHead({ title: 'Overview' })
 const metric = useMetric()
 const span = useSpan()
 
-const { data, error, pending } = useLazyFetch('/api/req', { query: { span }, server: false })
+const { data, error, pending } = useFetch('/api/req', { query: { span } })
 useLoading(pending)
 
 const points = computed(() =>

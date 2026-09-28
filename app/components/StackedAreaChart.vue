@@ -19,12 +19,13 @@
 </template>
 
 <script setup lang="ts">
-import { LineSeries, LineStyle, type ISeriesApi } from 'lightweight-charts'
+import type { ISeriesApi } from 'lightweight-charts'
 
 import type { Metric } from '~/composables/useMetric'
 import { fmt, byteScale } from '~/utils/format'
 import { COLORS } from '~/utils/palette'
-import { fmtTime } from '~/utils/chart'
+import { DASHED, fmtTime } from '~/utils/chart'
+import type { LW } from '~/composables/useChart'
 
 type Series = { name: string; data: { time: string | number; value: number }[]; color: string }
 
@@ -38,6 +39,7 @@ const wrapper = ref<HTMLElement>()
 const el = ref<HTMLElement>()
 let lines: ISeriesApi<'Line'>[] = []
 let pending: (ISeriesApi<'Line'> | null)[] = []
+let lw: LW
 let scale = { div: 1, unit: 'B' }
 
 const tip = reactive({
@@ -60,7 +62,8 @@ function fmtVal(v: number) {
 
 const chart = useChart(
   el,
-  (c) => {
+  (c, m) => {
+    lw = m
     c.applyOptions({ leftPriceScale: { scaleMargins: { top: 0.15, bottom: 0.1 } } })
     lines = []
     pending = []
@@ -119,12 +122,11 @@ function update() {
       },
     }
     const data = s.data.map((d) => ({ time: d.time, value: d.value / scale.div })) as any[]
-    const line = c.addSeries(LineSeries, opts)
+    const line = c.addSeries(lw.LineSeries, opts)
     line.setData(data.length >= 2 ? data.slice(0, -1) : data)
     lines.push(line)
     let p: ISeriesApi<'Line'> | null = null
-    if (data.length >= 2)
-      (p = c.addSeries(LineSeries, { ...opts, lineStyle: LineStyle.Dashed })).setData(data.slice(-2))
+    if (data.length >= 2) (p = c.addSeries(lw.LineSeries, { ...opts, lineStyle: DASHED })).setData(data.slice(-2))
     pending.push(p)
   })
 }

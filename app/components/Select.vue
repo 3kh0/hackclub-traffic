@@ -1,7 +1,5 @@
 <!-- native select styled as kumo's Select trigger -->
 <script setup lang="ts" generic="T extends string | number">
-import { PhCaretUpDown } from '@phosphor-icons/vue'
-
 const props = defineProps<{
   modelValue: T
   options: { value: T; label: string }[]
@@ -29,6 +27,6 @@ function onChange(e: Event) {
     >
       <option v-for="o in options" :key="o.value" :value="o.value">{{ o.label }}</option>
     </select>
-    <PhCaretUpDown :size="16" class="pointer-events-none absolute right-2.5 text-kumo-subtle" />
+    <Icon name="caret-up-down" :size="16" class="pointer-events-none absolute right-2.5 text-kumo-subtle" />
   </div>
 </template>

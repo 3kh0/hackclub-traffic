@@ -5,7 +5,7 @@
         to="/"
         class="flex items-center gap-2.5 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-kumo-brand"
       >
-        <img src="https://assets.hackclub.com/icon-rounded.svg" alt="" class="size-7" />
+        <img src="/hackclub.svg" alt="" width="28" height="28" class="size-7" />
         <span class="text-base font-semibold text-kumo-strong">Hack Club</span>
       </NuxtLink>
       <span class="text-kumo-inactive" aria-hidden="true">/</span>
@@ -18,12 +18,12 @@
           aria-label="Source on GitHub"
           :class="ghostButton"
         >
-          <PhGithubLogo :size="18" />
+          <Icon name="github-logo" :size="18" />
         </a>
         <button type="button" :class="ghostButton" aria-label="Toggle color mode" @click="toggle">
           <ClientOnly>
-            <PhSun v-if="mode === 'dark'" :size="18" />
-            <PhMoon v-else :size="18" />
+            <Icon v-if="mode === 'dark'" name="sun" :size="18" />
+            <Icon v-else name="moon" :size="18" />
             <template #fallback><span class="size-4.5" /></template>
           </ClientOnly>
         </button>
@@ -47,8 +47,8 @@
             class="relative flex min-h-8.5 w-full min-w-0 items-center gap-2.5 rounded-lg px-3 text-sm font-medium text-kumo-default outline-none focus-visible:bg-kumo-tint focus-visible:text-kumo-strong"
             :class="tab.active ? 'bg-kumo-tint' : 'hover:bg-kumo-tint'"
           >
-            <component
-              :is="tab.icon"
+            <Icon
+              :name="tab.icon"
               :size="18"
               :weight="tab.active ? 'fill' : 'regular'"
               class="shrink-0"
@@ -96,10 +96,10 @@
             </div>
             <div class="flex flex-wrap items-center gap-2">
               <Select v-if="current?.metric" v-model="metric" :options="metricOptions" label="Metric">
-                <template #icon><PhChartLineUp :size="16" /></template>
+                <template #icon><Icon name="chart-line-up" /></template>
               </Select>
               <Select v-model="span" :options="spanOptions" label="Time range">
-                <template #icon><PhCalendarBlank :size="16" /></template>
+                <template #icon><Icon name="calendar-blank" /></template>
               </Select>
             </div>
           </div>
@@ -137,7 +137,7 @@
             <span>Open source on</span>
             <span
               ><a href="https://github.com/3kh0/hackclub-traffic" target="_blank" rel="noopener" :class="footerLink"
-                ><PhGithubLogo :size="16" class="mr-1" />GitHub</a
+                ><Icon name="github-logo" class="mr-1" />GitHub</a
               >.</span
             >
           </footer>
@@ -148,23 +148,9 @@
 </template>
 
 <script setup lang="ts">
-import {
-  PhSquaresFour,
-  PhHardDrives,
-  PhGlobeHemisphereWest,
-  PhBrowser,
-  PhDesktop,
-  PhGauge,
-  PhShieldCheck,
-  PhDatabase,
-  PhGithubLogo,
-  PhSun,
-  PhMoon,
-  PhChartLineUp,
-  PhCalendarBlank,
-} from '@phosphor-icons/vue'
 import { METRICS, type Metric } from '~/composables/useMetric'
 import { SPANS } from '~/composables/useSpan'
+import type { IconName } from '~/utils/icons'
 
 const route = useRoute()
 const metric = useMetric()
@@ -182,15 +168,15 @@ const spanOptions = Object.entries(SPANS).map(([id, label]) => ({ value: Number(
 const { data: summary } = await useFetch<any>('/api/summary', { query: { span } })
 
 // metric: pages whose charts follow the Metric select
-const tabs = [
-  { to: '/', label: 'Overview', icon: PhSquaresFour, metric: true },
-  { to: '/hosts', label: 'Hosts', icon: PhHardDrives, metric: true },
-  { to: '/countries', label: 'Countries', icon: PhGlobeHemisphereWest, metric: true },
-  { to: '/browser', label: 'Browsers', icon: PhBrowser, metric: true },
-  { to: '/os', label: 'Operating Systems', icon: PhDesktop, metric: true },
-  { to: '/performance', label: 'Performance', icon: PhGauge, metric: false },
-  { to: '/security', label: 'Security', icon: PhShieldCheck, metric: false },
-  { to: '/cache', label: 'Cache', icon: PhDatabase, metric: false },
+const tabs: { to: string; label: string; icon: IconName; metric: boolean }[] = [
+  { to: '/', label: 'Overview', icon: 'squares-four', metric: true },
+  { to: '/hosts', label: 'Hosts', icon: 'hard-drives', metric: true },
+  { to: '/countries', label: 'Countries', icon: 'globe-hemisphere-west', metric: true },
+  { to: '/browser', label: 'Browsers', icon: 'browser', metric: true },
+  { to: '/os', label: 'Operating Systems', icon: 'desktop', metric: true },
+  { to: '/performance', label: 'Performance', icon: 'gauge', metric: false },
+  { to: '/security', label: 'Security', icon: 'shield-check', metric: false },
+  { to: '/cache', label: 'Cache', icon: 'database', metric: false },
 ]
 const nav = computed(() =>
   tabs.map((t) => ({ ...t, active: t.to === route.path, link: { path: t.to, query: route.query } })),

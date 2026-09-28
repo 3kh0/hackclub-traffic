@@ -29,9 +29,9 @@
                 @click="t(col.key)"
               >
                 {{ col.label }}
-                <component
-                  :is="sort.dir === 'desc' ? PhArrowDown : PhArrowUp"
+                <Icon
                   v-if="sort.key === col.key"
+                  :name="sort.dir === 'desc' ? 'arrow-down' : 'arrow-up'"
                   :size="14"
                   weight="bold"
                 />
@@ -65,7 +65,7 @@
                 :style="item.on && { backgroundColor: item.color, '--tw-ring-color': item.color }"
                 @click.stop="$emit('t', item.name)"
               >
-                <PhCheck v-if="item.on" :size="12" weight="bold" class="text-white" />
+                <Icon v-if="item.on" name="check" :size="12" weight="bold" class="text-white" />
               </button>
             </td>
             <td class="truncate font-medium" :class="item.on && 'text-kumo-strong'" :title="item.name">
@@ -82,7 +82,6 @@
 </template>
 
 <script setup lang="ts">
-import { PhArrowDown, PhArrowUp, PhCheck } from '@phosphor-icons/vue'
 import { fmt, fmtNum } from '~/utils/format'
 import { METRICS, TOTALS, type Metric } from '~/composables/useMetric'
 

@@ -19,12 +19,13 @@
 </template>
 
 <script setup lang="ts">
-import { AreaSeries, LineStyle, type ISeriesApi } from 'lightweight-charts'
+import type { ISeriesApi } from 'lightweight-charts'
 
 import type { Metric } from '~/composables/useMetric'
 import { fmt, fmtNum, byteScale } from '~/utils/format'
 import { CHART, alpha } from '~/utils/palette'
-import { fmtTime } from '~/utils/chart'
+import { DASHED, fmtTime } from '~/utils/chart'
+import type { LW } from '~/composables/useChart'
 
 type Point = { time: string | number; value: number }
 
@@ -41,6 +42,7 @@ const wrapper = ref<HTMLElement>()
 const el = ref<HTMLElement>()
 let series: ISeriesApi<'Area'> | null = null
 let pending: ISeriesApi<'Area'> | null = null
+let lw: LW
 let scale = { div: 1, unit: 'B' }
 
 const tooltip = reactive({ visible: false, x: 0, y: 0, time: '', value: '' })
@@ -62,9 +64,10 @@ const opts = () => ({
 
 const chart = useChart(
   el,
-  (c) => {
+  (c, m) => {
+    lw = m
     pending = null
-    series = c.addSeries(AreaSeries, {
+    series = c.addSeries(m.AreaSeries, {
       ...opts(),
       autoscaleInfoProvider: () => {
         const d = props.data.length >= 2 ? props.data.slice(0, -1) : props.data
@@ -97,7 +100,7 @@ function update() {
   const data = props.data.map((d) => ({ time: d.time, value: d.value / scale.div })) as any[]
   series.setData(data.length >= 2 ? data.slice(0, -1) : data)
   if (data.length < 2) return pending?.setData([])
-  pending ??= chart()!.addSeries(AreaSeries, { ...opts(), lineStyle: LineStyle.Dashed })
+  pending ??= chart()!.addSeries(lw.AreaSeries, { ...opts(), lineStyle: DASHED })
   pending.setData(data.slice(-2))
 }
 
