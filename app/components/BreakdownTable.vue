@@ -1,62 +1,95 @@
 <template>
-  <div class="bg-background">
-    <h2 class="text-lg text-main font-semibold mb-4">{{ label }} Breakdown</h2>
+  <LayerCard :title="`${label} Breakdown`" flush>
+    <template #actions>
+      <span
+        class="inline-flex items-center rounded-full bg-kumo-fill px-2 py-0.5 text-xs font-medium text-kumo-badge-neutral-subtle tabular-nums"
+      >
+        {{ selected.size }} / 15 on chart
+      </span>
+    </template>
     <div class="overflow-x-auto">
-      <table class="w-full text-sm table-fixed">
+      <!-- kumo Table: header on base, zebra rows on elevated -->
+      <table
+        class="isolate w-full table-fixed text-left text-base text-kumo-default [&_td]:p-3 [&_th]:border-b [&_th]:border-kumo-fill [&_th]:bg-kumo-base [&_th]:p-3 [&_th]:font-semibold"
+      >
         <thead>
-          <tr class="text-subtext text-left border-b border-white/10">
-            <th class="pb-2 pr-4 w-8"></th>
-            <th class="pb-2 pr-4 text-main font-semibold" :class="'w-[40%]'">{{ label }}</th>
-            <th class="pb-2 pr-4 text-right cursor-pointer select-none hover:text-main transition-colors w-[20%]" @click="t('requests')">
-              Requests <span v-if="sort.key === 'requests'" class="text-graph">{{ sort.dir === 'desc' ? '↓' : '↑' }}</span>
-            </th>
-            <th class="pb-2 pr-4 text-right cursor-pointer select-none hover:text-main transition-colors w-[20%]" @click="t('bytes')">
-              Data Transfer <span v-if="sort.key === 'bytes'" class="text-graph">{{ sort.dir === 'desc' ? '↓' : '↑' }}</span>
-            </th>
-            <th class="pb-2 text-right cursor-pointer select-none hover:text-main transition-colors w-[20%]" @click="t('visits')">
-              Visits <span v-if="sort.key === 'visits'" class="text-graph">{{ sort.dir === 'desc' ? '↓' : '↑' }}</span>
+          <tr>
+            <th class="w-11"><span class="sr-only">Show on chart</span></th>
+            <th class="w-[40%]">{{ label }}</th>
+            <th
+              v-for="col in COLUMNS"
+              :key="col.key"
+              class="w-[20%] text-right"
+              :aria-sort="sort.key === col.key ? (sort.dir === 'desc' ? 'descending' : 'ascending') : undefined"
+            >
+              <button
+                type="button"
+                class="inline-flex cursor-pointer items-center gap-1 rounded font-semibold hover:text-kumo-strong focus:outline-none focus-visible:ring-2 focus-visible:ring-kumo-brand"
+                :class="sort.key === col.key ? 'text-kumo-default' : 'text-kumo-subtle'"
+                @click="t(col.key)"
+              >
+                {{ col.label }}
+                <component
+                  :is="sort.dir === 'desc' ? PhArrowDown : PhArrowUp"
+                  v-if="sort.key === col.key"
+                  :size="14"
+                  weight="bold"
+                />
+              </button>
             </th>
           </tr>
         </thead>
         <tbody>
           <tr
-            v-for="item in sorted"
+            v-for="item in rows"
             :key="item.name"
-            class="border-b p-2 border-white/5 transition-colors"
+            class="bg-kumo-base transition-colors even:bg-kumo-elevated"
             :class="[
-              selected.has(item.name) ? 'hover:bg-white/5 cursor-pointer' : 'opacity-40 hover:opacity-70',
-              !selected.has(item.name) && selected.size >= 15 ? 'cursor-not-allowed opacity-20 hover:opacity-20' : !selected.has(item.name) ? 'cursor-pointer' : ''
+              !item.on && 'text-kumo-subtle',
+              item.locked
+                ? 'cursor-not-allowed opacity-50'
+                : 'cursor-pointer hover:bg-kumo-tint even:hover:bg-kumo-tint',
             ]"
-            @click="$emit('t', item.name)"
+            @click="!item.locked && $emit('t', item.name)"
           >
-            <td class="py-2 pr-4">
-              <div
-                class="w-3 h-3 rounded-full transition-all"
-                :style="{
-                  backgroundColor: selected.has(item.name) ? colorMap.get(item.name) : 'transparent',
-                  border: selected.has(item.name) ? 'none' : '2px solid rgba(255,255,255,0.25)'
-                }"
-              />
+            <td>
+              <!-- kumo Checkbox, filled with the series color when checked -->
+              <button
+                type="button"
+                role="checkbox"
+                data-kumo-component="Checkbox"
+                :aria-checked="item.on"
+                :aria-label="`Show ${item.name} on chart`"
+                :disabled="item.locked"
+                class="relative flex size-4 items-center justify-center rounded-sm border-0 bg-kumo-base ring ring-kumo-hairline focus:outline-none focus-visible:ring-2 focus-visible:ring-kumo-brand disabled:cursor-not-allowed"
+                :style="item.on && { backgroundColor: item.color, '--tw-ring-color': item.color }"
+                @click.stop="$emit('t', item.name)"
+              >
+                <PhCheck v-if="item.on" :size="12" weight="bold" class="text-white" />
+              </button>
             </td>
-            <td class="py-2 pr-4 text-main font-mono font-bold truncate" :title="item.name">{{ item.name }}</td>
-            <td class="py-2 pr-4 text-right text-main">{{ fmtNum(item.totalRequests) }}</td>
-            <td class="py-2 pr-4 text-right text-main">{{ fmt(item.totalBytes) }}</td>
-            <td class="py-2 text-right text-main">{{ fmtNum(item.totalVisits) }}</td>
+            <td class="truncate font-medium" :class="item.on && 'text-kumo-strong'" :title="item.name">
+              {{ item.name }}
+            </td>
+            <td class="text-right tabular-nums">{{ fmtNum(item.totalRequests) }}</td>
+            <td class="text-right tabular-nums">{{ fmt(item.totalBytes) }}</td>
+            <td class="text-right tabular-nums">{{ fmtNum(item.totalVisits) }}</td>
           </tr>
         </tbody>
       </table>
     </div>
-  </div>
+  </LayerCard>
 </template>
 
 <script setup lang="ts">
+import { PhArrowDown, PhArrowUp, PhCheck } from '@phosphor-icons/vue'
 import { fmt, fmtNum } from '~/utils/format'
+import { METRICS, TOTALS, type Metric } from '~/composables/useMetric'
 
-type SortKey = 'requests' | 'bytes' | 'visits'
+const COLUMNS = (Object.keys(METRICS) as Metric[]).map((key) => ({ key, label: METRICS[key] }))
 
 interface Item {
   name: string
-  _index: number
   totalRequests: number
   totalBytes: number
   totalVisits: number
@@ -67,33 +100,33 @@ const props = defineProps<{
   items: Item[]
   selected: Set<string>
   colorMap: Map<string, string>
-  defaultSort?: SortKey
+  defaultSort?: Metric
 }>()
 
 defineEmits<{ t: [name: string] }>()
 
+// follows the Metric select until the user clicks a column
 const userOverride = ref(false)
-const sort = ref<{ key: SortKey; dir: 'desc' | 'asc' }>({ key: props.defaultSort ?? 'requests', dir: 'desc' })
+const sort = ref<{ key: Metric; dir: 'desc' | 'asc' }>({ key: props.defaultSort ?? 'requests', dir: 'desc' })
 
-watch(() => props.defaultSort, (key) => {
-  if (!userOverride.value && key) {
-    sort.value = { key, dir: 'desc' }
-  }
-})
+watch(
+  () => props.defaultSort,
+  (key) => key && !userOverride.value && (sort.value = { key, dir: 'desc' }),
+)
 
-function t(key: SortKey) {
+function t(key: Metric) {
   userOverride.value = true
-  if (sort.value.key === key) {
-    sort.value.dir = sort.value.dir === 'desc' ? 'asc' : 'desc'
-  } else {
-    sort.value = { key, dir: 'desc' }
-  }
+  sort.value = { key, dir: sort.value.key === key && sort.value.dir === 'desc' ? 'asc' : 'desc' }
 }
 
-const sorted = computed(() => {
-  const keyMap = { requests: 'totalRequests', bytes: 'totalBytes', visits: 'totalVisits' } as const
-  const field = keyMap[sort.value.key]
-  const mult = sort.value.dir === 'desc' ? -1 : 1
-  return [...props.items].sort((a: any, b: any) => mult * (a[field] - b[field]))
+const rows = computed(() => {
+  const { key, dir } = sort.value
+  const f = TOTALS[key]
+  return props.items
+    .toSorted((a, b) => (dir === 'desc' ? b[f] - a[f] : a[f] - b[f]))
+    .map((i) => {
+      const on = props.selected.has(i.name)
+      return { ...i, on, locked: !on && props.selected.size >= 15, color: props.colorMap.get(i.name) }
+    })
 })
 </script>

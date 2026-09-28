@@ -1,196 +1,110 @@
 <template>
   <div ref="wrapper" class="w-full h-full relative">
-    <div ref="chartContainer" class="w-full h-full" />
+    <div ref="el" class="w-full h-full" />
     <div
       v-if="tip.visible"
-      class="absolute pointer-events-none z-10 bg-black/85 backdrop-blur-sm border border-white/25 rounded-lg px-3 py-2 text-xs font-mono"
+      class="absolute pointer-events-none z-10 w-65 rounded-lg bg-kumo-base p-2 shadow-md outline-1 outline-kumo-line"
       :style="{ left: tip.x + 'px', top: tip.y + 'px' }"
     >
-      <div class="text-main font-bold mb-1 text-[11px]">{{ tip.time }}</div>
-      <div v-for="item in tip.items" :key="item.name" class="flex items-center gap-2 py-0.5">
-        <div class="w-2 h-2 rounded-full shrink-0" :style="{ backgroundColor: item.color }" />
-        <span class="text-subtext flex-1 truncate max-w-45">{{ item.name }}</span>
-        <span class="text-main font-medium ml-3 tabular-nums">{{ item.value }}</span>
+      <div class="mb-1 text-xs font-semibold text-kumo-default">{{ tip.time }}</div>
+      <div v-for="item in tip.items" :key="item.name" class="flex items-center justify-between gap-4 py-0.5">
+        <div class="flex min-w-0 items-center gap-2">
+          <span class="h-3 w-3 shrink-0 rounded-full" :style="{ backgroundColor: item.color }" />
+          <span class="truncate text-xs font-medium text-kumo-default">{{ item.name }}</span>
+        </div>
+        <span class="shrink-0 text-xs font-semibold text-kumo-default tabular-nums">{{ item.value }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { createChart, LineSeries, LineStyle, type IChartApi, type ISeriesApi, CrosshairMode } from 'lightweight-charts'
+import { LineSeries, LineStyle, type ISeriesApi } from 'lightweight-charts'
 
 import type { Metric } from '~/composables/useMetric'
-import { fmt, COLORS } from '~/utils/format'
+import { fmt, byteScale } from '~/utils/format'
+import { COLORS } from '~/utils/palette'
+import { fmtTime } from '~/utils/chart'
+
+type Series = { name: string; data: { time: string | number; value: number }[]; color: string }
 
 const props = defineProps<{
-  series: { name: string; data: { time: string | number; value: number }[]; color: string }[]
+  series: Series[]
   metric?: Metric
   span?: number
 }>()
 
 const wrapper = ref<HTMLElement>()
-const chartContainer = ref<HTMLElement>()
-let chart: IChartApi | null = null
-let instances: ISeriesApi<'Line'>[] = []
-let pending: ISeriesApi<'Line'>[] = []
-let bDiv = 1
-let bUnit = 'B'
+const el = ref<HTMLElement>()
+let lines: ISeriesApi<'Line'>[] = []
+let pending: (ISeriesApi<'Line'> | null)[] = []
+let scale = { div: 1, unit: 'B' }
 
 const tip = reactive({
-  visible: false, x: 0, y: 0, time: '',
+  visible: false,
+  x: 0,
+  y: 0,
+  time: '',
   items: [] as { name: string; color: string; value: string }[],
 })
+const bytes = () => props.metric === 'bytes'
+const colorOf = (s: Series, i: number) => s.color || COLORS[i % COLORS.length]!
 
 function fmtVal(v: number) {
-  if (props.metric === 'bytes') return fmt(v * bDiv)
+  if (bytes()) return fmt(v * scale.div)
   if (v >= 1e9) return (v / 1e9).toFixed(2) + 'B'
   if (v >= 1e6) return (v / 1e6).toFixed(2) + 'M'
   if (v >= 1e3) return (v / 1e3).toFixed(2) + 'k'
   return v.toFixed(0)
 }
 
-function fmtTime(t: number | string) {
-  const d = typeof t === 'number' ? new Date(t * 1000) : new Date(t)
-  if (!props.span || props.span >= 7)
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-  return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })
-}
-
-function reset() {
-  instances = []
-  pending = []
-}
-
-function createChartInstance() {
-  if (!chartContainer.value) return
-
-  chart = createChart(chartContainer.value, {
-    layout: {
-      background: { color: 'transparent' },
-      textColor: 'rgb(153, 153, 153)',
-      fontFamily: 'ui-monospace, monospace',
-      fontSize: 11,
-      attributionLogo: false,
-      
-    },
-    grid: {
-      vertLines: { color: 'rgba(255,255,255,0.06)' },
-      horzLines: { color: 'rgba(255,255,255,0.06)' },
-    },
-    leftPriceScale: {
-      visible: true,
-      borderColor: 'rgba(255,255,255,0.1)',
-      minimumWidth: 50,
-      scaleMargins: {
-        top: 0.15,
-        bottom: 0.1,
-      },
-    },
-    rightPriceScale: {
-      visible: false,
-    },
-    timeScale: {
-      visible: true,
-      borderColor: 'rgba(255,255,255,0.1)',
-      timeVisible: true,
-      secondsVisible: false,
-      tickMarkFormatter: (time: number, tickMarkType: number) => {
-        const d = new Date(time * 1000)
-        if (tickMarkType <= 0) return d.toLocaleDateString(undefined, { year: 'numeric' })
-        if (tickMarkType === 1) return d.toLocaleDateString(undefined, { month: 'short' })
-        if (tickMarkType === 2) return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-        if (d.getMinutes() % 5 !== 0) return ''
-        return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })
-      },
-    },
-    crosshair: {
-      mode: CrosshairMode.Normal,
-      vertLine: {
-        color: 'rgba(255,255,255,0.2)',
-        width: 1,
-        style: 2,
-        labelVisible: false,
-      },
-      horzLine: {
-        visible: false,
-        labelVisible: false,
-      },
-    },
-    handleScale: false,
-    handleScroll: false,
-    autoSize: true,
-  })
-
-  chart.subscribeCrosshairMove((param) => {
-    if (!param.time || !param.seriesData || param.seriesData.size === 0) {
-      tip.visible = false
-      return
-    }
-
-    const items: { name: string; color: string; value: string }[] = []
-    for (let i = 0; i < instances.length; i++) {
-      const p = pending[i]
-      const d = (param.seriesData.get(instances[i]!) ?? (p ? param.seriesData.get(p) : undefined)) as any
-      if (d?.value !== undefined) {
+const chart = useChart(
+  el,
+  (c) => {
+    c.applyOptions({ leftPriceScale: { scaleMargins: { top: 0.15, bottom: 0.1 } } })
+    lines = []
+    pending = []
+    c.subscribeCrosshairMove((p) => {
+      if (!p.time || !p.seriesData.size) return (tip.visible = false)
+      tip.items = lines.flatMap((l, i) => {
+        const d: any = p.seriesData.get(l) ?? (pending[i] ? p.seriesData.get(pending[i]!) : undefined)
         const s = props.series[i]!
-        items.push({ name: s.name, color: s.color || COLORS[i % COLORS.length]!, value: fmtVal(d.value) })
+        return d?.value === undefined ? [] : [{ name: s.name, color: colorOf(s, i), value: fmtVal(d.value) }]
+      })
+      Object.assign(tip, { visible: true, time: fmtTime(p.time as number, props.span) })
+      const r = wrapper.value?.getBoundingClientRect()
+      if (p.point && r) {
+        const x = p.point.x + 56
+        const y = p.point.y - (40 + tip.items.length * 22) / 2
+        tip.x = x + 260 > r.width ? r.width - 270 : x
+        tip.y = y < 0 ? 10 : y
       }
-    }
+    })
+    update()
+  },
+  [() => props.metric, () => props.span],
+)
 
-    tip.items = items
-    tip.time = fmtTime(param.time as number)
-    tip.visible = true
+function update() {
+  const c = chart()
+  if (!c) return
+  for (const s of [...lines, ...pending]) if (s) c.removeSeries(s)
+  lines = []
+  pending = []
+  scale = bytes()
+    ? byteScale(Math.max(0, ...props.series.flatMap((s) => s.data.map((d) => d.value))))
+    : { div: 1, unit: 'B' }
 
-    const rect = wrapper.value?.getBoundingClientRect()
-    if (param.point && rect) {
-      const tw = 260, th = 40 + items.length * 22
-      let x = param.point.x + 56
-      let y = param.point.y - th / 2
-      if (x + tw > rect.width) x = rect.width - tw - 10
-      if (y < 0) y = 10
-      tip.x = x
-      tip.y = y
-    }
-  })
-  updateSeries()
-  chart.timeScale().fitContent()
-}
-
-function updateSeries() {
-  if (!chart) return
-
-  for (const s of instances) chart.removeSeries(s)
-  for (const s of pending) if (s) chart.removeSeries(s)
-  reset()
-
-  const isBytes = props.metric === 'bytes'
-  if (isBytes) {
-    let max = 0
-    for (const s of props.series)
-      for (const d of s.data)
-        if (d.value > max) max = d.value
-    const k = 1024
-    const units = ['B', 'KB', 'MB', 'GB', 'TB']
-    const idx = max > 0 ? Math.floor(Math.log(max) / Math.log(k)) : 0
-    bDiv = Math.pow(k, idx)
-    bUnit = units[idx] || 'B'
-  } else {
-    bDiv = 1
-    bUnit = 'B'
-  }
-
-  for (let i = 0; i < props.series.length; i++) {
-    const s = props.series[i]!
-    const color = s.color || COLORS[i % COLORS.length]!
+  props.series.forEach((s, i) => {
     const opts = {
-      color,
+      color: colorOf(s, i),
       lineWidth: 2 as const,
       priceScaleId: 'left',
       priceFormat: {
         type: 'custom' as const,
         minMove: 1,
         formatter: (v: number) => {
-          if (isBytes) return parseFloat(v.toFixed(2)) + ' ' + bUnit
+          if (bytes()) return parseFloat(v.toFixed(2)) + ' ' + scale.unit
           if (v >= 1e6) return (v / 1e6).toFixed(1) + 'M'
           if (v >= 1e3) return (v / 1e3).toFixed(0) + 'k'
           return v.toFixed(0)
@@ -200,50 +114,24 @@ function updateSeries() {
       priceLineVisible: false,
       autoscaleInfoProvider: (original: () => any) => {
         const res = original()
-        if (res !== null && res.priceRange.minValue < 0) {
-          res.priceRange.minValue = 0
-        }
+        if (res?.priceRange.minValue < 0) res.priceRange.minValue = 0
         return res
       },
     }
-
-    const data = isBytes
-      ? s.data.map(d => ({ time: d.time, value: d.value / bDiv }))
-      : s.data
-
-    const inst = chart.addSeries(LineSeries, opts)
-
-    if (s.data.length >= 2) {
-      inst.setData(data.slice(0, -1) as any)
-      const pi = chart.addSeries(LineSeries, { ...opts, lineStyle: LineStyle.Dashed })
-      pi.setData(data.slice(-2) as any)
-      pending.push(pi)
-    } else {
-      inst.setData(data as any)
-      pending.push(null as any)
-    }
-
-    instances.push(inst)
-  }
+    const data = s.data.map((d) => ({ time: d.time, value: d.value / scale.div })) as any[]
+    const line = c.addSeries(LineSeries, opts)
+    line.setData(data.length >= 2 ? data.slice(0, -1) : data)
+    lines.push(line)
+    let p: ISeriesApi<'Line'> | null = null
+    if (data.length >= 2)
+      (p = c.addSeries(LineSeries, { ...opts, lineStyle: LineStyle.Dashed })).setData(data.slice(-2))
+    pending.push(p)
+  })
 }
 
-onMounted(() => createChartInstance())
-
-watch(() => props.series, () => {
-  updateSeries()
-  chart?.timeScale().fitContent()
-}, { deep: true })
-
-watch([() => props.metric, () => props.span], () => {
-  chart?.remove()
-  chart = null
-  reset()
-  createChartInstance()
-})
-
-onBeforeUnmount(() => {
-  chart?.remove()
-  chart = null
-  reset()
-})
+watch(
+  () => props.series,
+  () => (update(), chart()?.timeScale().fitContent()),
+  { deep: true },
+)
 </script>

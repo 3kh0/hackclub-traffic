@@ -2,7 +2,7 @@
 
 A simple dashboard for visualizing traffic to hackclub.com with the power of [Cloudflare GraphQL](https://developers.cloudflare.com/analytics/graphql-api/) and [TradingView charts](https://www.tradingview.com/lightweight-charts/)
 
-![Dashboard screenshot](https://cdn.hackclub.com/019c3701-0116-7ba4-b70c-7731f549cfcc/meffo%20(1).jpg)
+![Dashboard screenshot](<https://cdn.hackclub.com/019c3701-0116-7ba4-b70c-7731f549cfcc/meffo%20(1).jpg>)
 
 ## Setup
 

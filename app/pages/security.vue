@@ -1,85 +1,61 @@
 <template>
-  <div v-if="error" class="text-down">Error: {{ error.message }}</div>
+  <Banner v-if="error">Error: {{ error.message }}</Banner>
   <div v-else class="flex flex-col gap-6">
     <div class="grid grid-cols-2 gap-4">
-      <StatCard label="Total Events" :value="fmtNum((data as any)?.total ?? 0)" />
-      <StatCard label="Blocked" :value="fmtNum(bc)" />
+      <StatCard label="Total Events" :value="fmtNum(d.total ?? 0)" />
+      <StatCard label="Blocked" :value="fmtNum(blocked)" />
     </div>
 
-    <div>
-      <h2 class="text-lg text-main font-semibold mb-4">Events over time</h2>
+    <LayerCard title="Events over time">
       <div class="h-80">
-        <StackedAreaChart :series="sac" :span="span" />
+        <StackedAreaChart :series="series" :span="span" />
       </div>
-    </div>
+    </LayerCard>
 
-    <h2 class="text-lg text-main font-semibold mb-4">Action Breakdown</h2>
-    <div class="flex justify-center items-center gap-2">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Donut :segments="donutSegments" />
-        <Bars :items="(data as any)?.byAction?.map((a: any) => ({ label: a.action, value: a.count, color: ACTION_COLORS[a.action] ?? 'rgba(153, 153, 153, 1)' })) ?? []" />
+    <LayerCard title="Action Breakdown">
+      <div class="grid items-center gap-6 md:grid-cols-2">
+        <Donut :segments="slices" />
+        <Bars :items="slices" />
       </div>
-    </div>
+    </LayerCard>
 
-    <div class="grid md:grid-cols-2 gap-6">
-      <div>
-        <h2 class="text-lg text-main font-semibold mb-4">Top Blocked Countries</h2>
-        <Bars :items="countryItems" color="red" />
-      </div>
-      <div>
-        <h2 class="text-lg text-main font-semibold mb-4">Top Blocked Paths</h2>
-        <Bars :items="pathItems" color="rgba(255, 180, 60, 1)" />
-      </div>
+    <div class="grid gap-6 md:grid-cols-2">
+      <LayerCard title="Top Blocked Countries">
+        <Bars :items="countries" :color="SEMANTIC.attention" />
+      </LayerCard>
+      <LayerCard title="Top Blocked Paths">
+        <Bars :items="paths" :color="SEMANTIC.warning" />
+      </LayerCard>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { CHART, SEMANTIC } from '~/utils/palette'
+import { toSeries, toSlices } from '~/utils/series'
+
 useHead({ title: 'Security' })
 const span = useSpan()
 
-const { data, error, pending } = await useFetch('/api/security', {
-  query: { span },
-})
+const { data, error, pending } = await useFetch('/api/security', { query: { span } })
 useLoading(pending)
+const d = computed(() => (data.value ?? {}) as any)
 
 const ACTION_COLORS: Record<string, string> = {
-  block: 'rgba(232, 20, 3, 1)',
-  challenge: 'rgba(255, 180, 60, 1)',
-  jschallenge: 'rgba(255, 130, 200, 1)',
-  managed_challenge: 'rgba(190, 90, 255, 1)',
-  log: 'rgba(70, 147, 255, 1)',
-  skip: 'rgba(100, 235, 80, 1)',
+  block: SEMANTIC.attention,
+  challenge: SEMANTIC.warning,
+  jschallenge: CHART.pink,
+  managed_challenge: CHART.purple,
+  log: CHART.blue,
+  skip: SEMANTIC.success,
 }
+const color = (a: string) => ACTION_COLORS[a] ?? SEMANTIC.disabled
 
-const bc = computed(() =>
-  ((data.value as any)?.byAction ?? []).find((a: any) => a.action === 'block')?.count ?? 0
+const blocked = computed(() => d.value.byAction?.find((a: any) => a.action === 'block')?.count ?? 0)
+const series = computed(() => toSeries(d.value.timeline ?? [], 'action', color))
+const slices = computed(() => toSlices(d.value.byAction ?? [], 'action', color))
+const countries = computed(() =>
+  (d.value.topCountries ?? []).map((c: any) => ({ label: c.countryName, value: c.count })),
 )
-
-const sac = computed(() => {
-  const actions = [...new Set(((data.value as any)?.timeline ?? []).map((e: any) => e.action))] as string[]
-  return actions.map(action => ({
-    name: action,
-    color: ACTION_COLORS[action] ?? 'rgba(153, 153, 153, 1)',
-    data: ((data.value as any)?.timeline ?? [])
-      .filter((e: any) => e.action === action)
-      .map((e: any) => ({ time: new Date(e.ts).getTime() / 1000, value: e.count })),
-  }))
-})
-
-const donutSegments = computed(() =>
-  ((data.value as any)?.byAction ?? []).map((a: any) => ({
-    label: a.action,
-    value: a.count,
-    color: ACTION_COLORS[a.action] ?? 'rgba(153, 153, 153, 1)',
-  }))
-)
-
-const countryItems = computed(() =>
-  ((data.value as any)?.topCountries ?? []).map((c: any) => ({ label: c.countryName, value: c.count }))
-)
-
-const pathItems = computed(() =>
-  ((data.value as any)?.topPaths ?? []).map((p: any) => ({ label: p.path, value: p.count }))
-)
+const paths = computed(() => (d.value.topPaths ?? []).map((p: any) => ({ label: p.path, value: p.count })))
 </script>

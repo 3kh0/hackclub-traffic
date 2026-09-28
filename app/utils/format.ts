@@ -1,9 +1,15 @@
+const UNITS = ['B', 'KB', 'MB', 'GB', 'TB']
+const unit = (n: number) => (n > 0 ? Math.floor(Math.log(n) / Math.log(1024)) : 0)
+
 export function fmt(bytes: number) {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  const i = unit(bytes)
+  return parseFloat((bytes / 1024 ** i).toFixed(2)) + ' ' + UNITS[i]
+}
+
+// divisor + unit label so a whole chart shares one byte unit
+export function byteScale(max: number) {
+  const i = unit(max)
+  return { div: 1024 ** i, unit: UNITS[i] || 'B' }
 }
 
 export function fmtNum(n: number) {
@@ -12,20 +18,9 @@ export function fmtNum(n: number) {
   return n.toLocaleString()
 }
 
-export const COLORS = [
-  "rgba(255, 90, 100, 0.8)",
-  "rgba(100, 235, 80, 0.8)",
-  "rgba(60, 180, 255, 0.8)",
-  "rgba(255, 180, 60, 0.8)",
-  "rgba(190, 90, 255, 0.8)",
-  "rgba(255, 130, 200, 0.8)",
-  "rgba(0, 220, 180, 0.8)",
-  "rgba(255, 80, 160, 0.8)",
-  "rgba(140, 255, 120, 0.8)",
-  "rgba(255, 140, 255, 0.8)",
-  "rgba(80, 255, 220, 0.8)",
-  "rgba(255, 210, 80, 0.8)",
-  "rgba(200, 120, 255, 0.8)",
-  "rgba(255, 110, 80, 0.8)",
-  "rgba(120, 255, 255, 0.8)"
-]
+export const fmtPct = (r: number) => (r * 100).toFixed(1) + '%'
+
+// share of total, rounded to 0.1, with tiny slices shown as <0.1
+export const share = (v: number, t: number) => (t > 0 && (v / t) * 100 < 0.1 ? '<0.1' : Math.round((v / t) * 1000) / 10)
+
+export const ts = (d: string) => new Date(d).getTime() / 1000

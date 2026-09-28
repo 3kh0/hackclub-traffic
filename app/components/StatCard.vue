@@ -3,17 +3,20 @@ defineProps<{
   label: string
   value: string
   trend?: number
-  icon?: string
 }>()
 </script>
 
 <template>
-  <div class="border border-white/10 px-5 py-4 bg-white/2">
-    <div class="text-subtext text-xs font-medium uppercase tracking-wider">{{ label }}</div>
-    <div class="text-main text-3xl font-bold font-mono mt-1">{{ value }}</div>
-    <div v-if="trend !== undefined" class="flex items-center gap-1 mt-1 text-xs font-medium" :class="trend >= 0 ? 'text-up' : 'text-down'">
-      <span>{{ trend >= 0 ? '↑' : '↓' }}</span>
-      <span>{{ Math.abs(trend).toFixed(1) }}%</span>
+  <LayerCard :title="label">
+    <div class="flex items-baseline justify-between gap-2">
+      <span class="text-2xl leading-tight font-semibold text-kumo-strong tabular-nums">{{ value }}</span>
+      <span
+        v-if="trend !== undefined"
+        class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+        :class="trend >= 0 ? 'bg-kumo-success-tint text-kumo-success' : 'bg-kumo-danger-tint text-kumo-danger'"
+      >
+        {{ trend >= 0 ? '↑' : '↓' }} {{ Math.abs(trend).toFixed(1) }}%
+      </span>
     </div>
-  </div>
+  </LayerCard>
 </template>

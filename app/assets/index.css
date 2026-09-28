@@ -1,17 +1,26 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@import '@cloudflare/kumo/styles/tailwind';
+
+/* dark: variant follows Kumo's data-mode attribute instead of the OS setting */
+@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
 
 @theme {
-  /* taken from the cf dashboard */
-  --color-background: rgb(10, 10, 10);
-  --color-surface: rgb(49, 49, 49);
-  --color-main: rgb(217, 217, 217);
-  --color-subtext: rgb(153, 153, 153);
-  --color-link: rgb(8, 111, 255);
-  --color-up: rgb(34, 139, 73);
-  --color-down: rgb(232, 20, 3);
-  --color-graph: rgb(70, 147, 255);
+  --font-sans:
+    'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
+}
+
+html {
+  letter-spacing: -0.01em;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'calt';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-mono {
+  letter-spacing: normal;
 }
 
 body {
-  @apply bg-background text-main;
+  @apply bg-kumo-base text-kumo-default;
 }

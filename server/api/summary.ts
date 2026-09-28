@@ -22,7 +22,9 @@ export default defineEventHandler(async (event) => {
   const d = scope(r)
 
   const totals = d?.totals ?? []
-  let totalRequests = 0, totalBytes = 0, totalVisits = 0
+  let totalRequests = 0,
+    totalBytes = 0,
+    totalVisits = 0
   for (const t of totals) {
     totalRequests += t.count
     totalBytes += t.sum.edgeResponseBytes
@@ -30,7 +32,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const cacheData = d?.cache ?? []
-  let cacheHits = 0, cacheTotal = 0
+  let cacheHits = 0,
+    cacheTotal = 0
   for (const c of cacheData) {
     cacheTotal += c.count
     if (c.dimensions.metric === 'hit') cacheHits += c.count

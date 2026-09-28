@@ -1,16 +1,23 @@
 {
   "name": "cf-data",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
   },
   "dependencies": {
+    "@cloudflare/kumo": "^2.14.0",
+    "@phosphor-icons/vue": "^2.2.1",
     "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^26.6.3",
     "lightweight-charts": "^5.2.1",
     "nprogress": "^0.2.0",
     "nuxt": "^4.5.2",
@@ -19,6 +26,8 @@
     "vue-router": "^5.3.1"
   },
   "devDependencies": {
-    "@types/nprogress": "^0.2.3"
+    "@types/nprogress": "^0.2.3",
+    "oxfmt": "^0.70.0",
+    "oxlint": "^1.85.0"
   }
 }

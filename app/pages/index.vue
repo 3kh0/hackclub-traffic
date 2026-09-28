@@ -1,13 +1,16 @@
 <template>
-  <div v-if="error" class="text-down">Error: {{ error.message }}</div>
+  <Banner v-if="error">Error: {{ error.message }}</Banner>
   <div v-else class="flex flex-col gap-6">
-    <div class="bg-background">
-      <h2 class="text-lg text-main font-semibold mb-4">{{ METRICS[metric] }} over time</h2>
+    <LayerCard :title="`${METRICS[metric]} over time`">
       <div class="h-80">
-        <LoadingChart v-if="pending" />
-        <AreaChart v-else :data="d" :metric="metric" :span="span" />
+        <!-- data is fetched client-side only, so render the skeleton on the server -->
+        <ClientOnly>
+          <ChartSkeleton v-if="pending" />
+          <AreaChart v-else :data="points" :metric="metric" :span="span" :name="METRICS[metric]" />
+          <template #fallback><ChartSkeleton /></template>
+        </ClientOnly>
       </div>
-    </div>
+    </LayerCard>
   </div>
 </template>
 
@@ -18,15 +21,12 @@ useHead({ title: 'Overview' })
 const metric = useMetric()
 const span = useSpan()
 
-const { data, error, pending } = useLazyFetch('/api/req', {
-  query: { span },
-  server: false,
-})
+const { data, error, pending } = useLazyFetch('/api/req', { query: { span }, server: false })
 useLoading(pending)
 
-const d = computed(() =>
-  [...((data.value as any)?.data ?? [])]
-    .sort((a: any, b: any) => a.dimensions.ts.localeCompare(b.dimensions.ts))
-    .map((d: any) => ({ time: new Date(d.dimensions.ts).getTime() / 1000, value: d.sum[metric.value] }))
+const points = computed(() =>
+  ((data.value as any)?.data ?? [])
+    .toSorted((a: any, b: any) => a.dimensions.ts.localeCompare(b.dimensions.ts))
+    .map((p: any) => ({ time: ts(p.dimensions.ts), value: p.sum[metric.value] })),
 )
 </script>

@@ -1,5 +1,6 @@
 export function baseFilter(since: Date, now: Date, dateOnly = false) {
-  if (dateOnly) return { AND: [{ date_geq: since.toISOString().slice(0, 10), date_leq: now.toISOString().slice(0, 10) }] }
+  if (dateOnly)
+    return { AND: [{ date_geq: since.toISOString().slice(0, 10), date_leq: now.toISOString().slice(0, 10) }] }
   return { AND: [{ datetime_geq: since.toISOString(), datetime_leq: now.toISOString() }] }
 }
 
@@ -13,7 +14,7 @@ export async function cfQuery(query: string, variables: Record<string, any>) {
   const t = setTimeout(() => ac.abort(), 10_000)
   const res = await fetch('https://api.cloudflare.com/client/v4/graphql', {
     method: 'POST',
-    headers:{ 'Authorization': `Bearer ${c.cftoken}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: `Bearer ${c.cftoken}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ query, variables }),
     signal: ac.signal,
   }).finally(() => clearTimeout(t))
@@ -51,7 +52,7 @@ export function bmap(raw: any[]) {
 }
 
 export function attachDaily<T extends Record<string, any>>(items: T[], key: string, dailyMap: Record<string, any[]>) {
-  return items.map(i => ({
+  return items.map((i) => ({
     ...i,
     daily: (dailyMap[i[key]] ?? []).sort((a: any, b: any) => a.date.localeCompare(b.date)),
   }))

@@ -1,32 +1,7 @@
 <template>
-  <div v-if="error" class="text-down">Error: {{ error.message }}</div>
-  <div v-else class="flex flex-col gap-6">
-    <div class="bg-background">
-      <h2 class="text-lg text-main font-semibold mb-4">{{ METRICS[metric] }} over time</h2>
-      <div class="h-80">
-        <StackedLoadingChart v-if="pending" />
-         <StackedAreaChart v-else :series="chartSeries" :metric="metric" :span="span" />
-      </div>
-    </div>
-
-    <BreakdownTable
-      label="Country"
-      :items="all"
-      :selected="selected"
-      :color-map="colorMap"
-      :default-sort="metric"
-      @t="toggle"
-    />
-  </div>
+  <BreakdownPage label="Country" endpoint="/api/countries" data-key="countries" name-key="country" />
 </template>
 
 <script setup lang="ts">
-import { METRICS } from '~/composables/useMetric'
-
 useHead({ title: 'Countries' })
-const { metric, span, pending, error, all, selected, colorMap, toggle, chartSeries } = useBreakdown({
-  endpoint: '/api/countries',
-  dataKey: 'countries',
-  nameKey: 'country',
-})
 </script>

@@ -12,10 +12,12 @@ usePageLoading()
 
 <style>
 #nprogress .bar {
-  background: var(--color-graph);
+  background: var(--color-kumo-brand);
 }
 
 #nprogress .peg {
-  box-shadow: 0 0 10px var(--color-graph), 0 0 5px var(--color-graph);
+  box-shadow:
+    0 0 10px var(--color-kumo-brand),
+    0 0 5px var(--color-kumo-brand);
 }
 </style>

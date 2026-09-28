@@ -1,9 +1,10 @@
 import { computed, ref, watch, useFetch } from '#imports'
-import type { Metric } from './useMetric'
-import { useMetric } from './useMetric'
+import { TOTALS, useMetric } from './useMetric'
 import { useSpan } from './useSpan'
 import { useLoading } from './useLoading'
 import { useColorMap } from './useColorMap'
+import { ts } from '~/utils/format'
+import { SEMANTIC } from '~/utils/palette'
 
 interface BreakdownConfig {
   endpoint: string
@@ -15,63 +16,47 @@ interface BreakdownConfig {
 export function useBreakdown(cfg: BreakdownConfig) {
   const metric = useMetric()
   const span = useSpan()
-
-  const { data, error, pending } = useFetch(cfg.endpoint, {
-    query: { span },
-  })
+  const { data, error, pending } = useFetch(cfg.endpoint, { query: { span } })
   useLoading(pending)
 
   const all = computed(() =>
-    ((data.value as any)?.[cfg.dataKey] ?? []).map((item: any, i: number) => ({
-      ...item,
-      _index: i,
-      name: item[cfg.nameKey],
-    }))
+    ((data.value as any)?.[cfg.dataKey] ?? []).map((item: any) => ({ ...item, name: item[cfg.nameKey] })),
   )
 
   const selected = ref(new Set<string>())
   const colorMap = useColorMap(selected)
 
-  const sortKey = computed<'totalRequests' | 'totalBytes' | 'totalVisits'>(() =>
-    metric.value === 'bytes' ? 'totalBytes' : metric.value === 'visits' ? 'totalVisits' : 'totalRequests'
+  // select the top N by the current metric whenever data or metric changes
+  watch(
+    [all, metric],
+    ([items, m]) => {
+      if (items.length)
+        selected.value = new Set(
+          items
+            .toSorted((a: any, b: any) => b[TOTALS[m]] - a[TOTALS[m]])
+            .slice(0, cfg.topN ?? 5)
+            .map((i: any) => i.name),
+        )
+    },
+    { immediate: true, flush: 'sync' },
   )
-
-  watch([all, metric], ([v]: [any, any]) => {
-    if (v.length) {
-      const sorted = [...v].sort((a: any, b: any) => b[sortKey.value] - a[sortKey.value])
-      selected.value = new Set(sorted.slice(0, cfg.topN ?? 5).map((item: any) => item.name))
-    }
-  }, { immediate: true, flush: 'sync' })
 
   function toggle(name: string) {
     const s = new Set(selected.value)
-    s.has(name) ? s.delete(name) : s.size < 15 && s.add(name)
+    if (s.has(name)) s.delete(name)
+    else if (s.size < 15) s.add(name)
     selected.value = s
   }
 
   const chartSeries = computed(() =>
     all.value
-      .filter((item: any) => selected.value.has(item.name))
-      .map((item: any) => ({
-        name: item.name as string,
-        color: colorMap.value.get(item.name) ?? 'rgba(255,255,255,0.25)',
-        data: item.daily.map((d: any) => ({
-          time: new Date(d.date).getTime() / 1000,
-          value: d[metric.value],
-        })),
-      }))
+      .filter((i: any) => selected.value.has(i.name))
+      .map((i: any) => ({
+        name: i.name as string,
+        color: colorMap.value.get(i.name) ?? SEMANTIC.disabled,
+        data: i.daily.map((d: any) => ({ time: ts(d.date), value: d[metric.value] })),
+      })),
   )
 
-  return {
-    metric,
-    span,
-    data,
-    error,
-    pending,
-    all,
-    selected,
-    colorMap,
-    toggle,
-    chartSeries,
-  }
+  return { metric, span, error, pending, all, selected, colorMap, toggle, chartSeries }
 }
